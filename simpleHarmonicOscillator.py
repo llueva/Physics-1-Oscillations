@@ -32,7 +32,7 @@ spring= helix(
 graph1= graph(
     title= "position, velocity, acceleration vs. time",
     xtitle= "time in seconds",
-    ytitle="values",
+    ytitle="position, velocity, acceleration",
     width= 600,
     height= 300  
     )
