@@ -64,4 +64,4 @@ Tasks:
 
 ---
 
-> DUE JULY 27TH
+> DUE JULY 22nd
