@@ -1,0 +1,7 @@
+bump = 1 #add this to the constants in the beginning
+
+if time < 1:  #replace the force calculations in the while loop with this if statement
+        force= -spring_constant * (position - initial_length) - damping_constant * velocity + bump
+    else:
+        force= -spring_constant * (position - initial_length) - damping_constant * velocity
+        
