@@ -1,0 +1,78 @@
+from vpython import *
+
+scene.background = color.white
+scene.width = 800
+scene.height = 600
+scene.range = 1.2
+scene.center = vector(0, 0.5, 0)
+
+m_chassis = 375
+m_wheel = 35
+k_suspension = 15000
+k_tire = 200000
+b_suspension = 1500
+g = 9.8
+
+dt = 0.001
+time = 0
+total_time = 5
+
+bump_start_time = 1.0
+bump_height = 0.05
+bump_duration = 0.2
+
+delta_y_tire_static = (m_chassis + m_wheel) * g / k_tire
+delta_y_susp_static = m_chassis * g / k_suspension
+
+y_road_initial = 0
+y_wheel_initial = y_road_initial + delta_y_tire_static
+y_chassis_initial = y_wheel_initial + delta_y_susp_static
+
+y_c = 0
+v_c = 0
+y_w = 0
+v_w = 0
+
+road = box(pos=vector(0, y_road_initial - 0.01, 0), size=vector(4, 0.02, 2), color=color.gray(0.6))
+chassis = box(pos=vector(0, y_chassis_initial, 0), size=vector(1.5, 0.5, 0.75), color=color.red)
+wheel = cylinder(pos=vector(0, y_wheel_initial, 0), axis=vector(0, 0, 0.5), radius=0.2, color=color.black)
+susp_spring = helix(pos=wheel.pos, axis=chassis.pos - wheel.pos, radius=0.08, thickness=0.02, coils=10, color=color.cyan)
+
+disp_graph = graph(title="Displacement vs. Time", xtitle="Time (s)", ytitle="Displacement (m)", width=800, height=300)
+
+chassis_curve = gcurve(graph=disp_graph, color=color.red, label="Chassis Displacement")
+wheel_curve = gcurve(graph=disp_graph, color=color.black, label="Wheel Displacement")
+
+while time < total_time:
+    rate(1/dt)
+
+    y_road = 0
+    if time >= bump_start_time and time <= (bump_start_time + bump_duration):
+        y_road = bump_height
+
+    force_susp_spring = -k_suspension * (y_c - y_w)
+    force_susp_damper = -b_suspension * (v_c - v_w)
+    force_tire_spring = -k_tire * (y_w - y_road)
+    
+    force_on_chassis = force_susp_spring + force_susp_damper
+    force_on_wheel = -force_susp_spring - force_susp_damper + force_tire_spring
+    
+    a_c = force_on_chassis / m_chassis
+    a_w = force_on_wheel / m_wheel
+    
+    v_c = v_c + a_c * dt
+    v_w = v_w + a_w * dt
+    
+    y_c = y_c + v_c * dt
+    y_w = y_w + v_w * dt
+    
+    chassis.pos.y = y_chassis_initial + y_c
+    wheel.pos.y = y_wheel_initial + y_w
+    
+    susp_spring.pos = wheel.pos
+    susp_spring.axis = chassis.pos - wheel.pos
+    
+    chassis_curve.plot(time, y_c)
+    wheel_curve.plot(time, y_w)
+
+    time = time + dt
